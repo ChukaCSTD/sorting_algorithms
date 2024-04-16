@@ -1,48 +1,65 @@
 #include "sort.h"
-#include <stdlib.h>
 
 /**
- * counting_sort - sorts an array of integers in ascending order
- * using the Counting sort algorithm
- * @array: Array to be sorted
- * @size: size of the array
+ * get_max - Get the maximum value in an array of integers.
+ * @array: An array of integers.
+ * @size: The size of the array.
+ * Return: The maximum integer in the array.
+ */
+int get_max(int *array, int size)
+{
+	int max, i;
+
+	for (max = array[0], i = 1; i < size; i++)
+	{
+		if (array[i] > max)
+			max = array[i];
+	}
+
+	return (max);
+}
+
+/**
+ * counting_sort - Sort an array of integers in ascending order
+ *                 using the counting sort algorithm.
+ * @array: An array of integers.
+ * @size: The size of the array.
  */
 void counting_sort(int *array, size_t size)
 {
-	int *counter, k;
-	size_t i, j, arr_size;
+	int *count, *sorted, max, i;
 
-	if (array == NULL || size <= 1)
+	if (array == NULL || size < 2)
 		return;
-	arr_size = array[0];
-	for (i = 0; array[i]; i++)
+
+	sorted = malloc(sizeof(int) * size);
+	if (sorted == NULL)
+		return;
+	max = get_max(array, size);
+	count = malloc(sizeof(int) * (max + 1));
+	if (count == NULL)
 	{
-		if (array[i] > (int)arr_size)
-			arr_size = array[i];
+		free(sorted);
+		return;
 	}
 
-	arr_size += 1;
+	for (i = 0; i < (max + 1); i++)
+		count[i] = 0;
+	for (i = 0; i < (int)size; i++)
+		count[array[i]] += 1;
+	for (i = 0; i < (max + 1); i++)
+		count[i] += count[i - 1];
+	print_array(count, max + 1);
 
-	counter = malloc(arr_size * sizeof(int *));
-	if (counter == NULL)
-		return;
+	for (i = 0; i < (int)size; i++)
+	{
+		sorted[count[array[i]] - 1] = array[i];
+		count[array[i]] -= 1;
+	}
 
-	for (i = 0; i < arr_size; i++)
-		counter[i] = 0;
+	for (i = 0; i < (int)size; i++)
+		array[i] = sorted[i];
 
-	for (i = 0; i < size; i++)
-		counter[array[i]] += 1;
-
-	for (i = 0; i <= arr_size; i++)
-		counter[i] += counter[i - 1];
-
-	print_array(counter, arr_size);
-
-	for (i = 1, j = 0; i <= arr_size; i++)
-		if (counter[i] != counter[i - 1])
-		{
-			for (k = 0; k < counter[i] - counter[i - 1]; k++)
-				array[j++] = i;
-		}
-	free(counter);
+	free(sorted);
+	free(count);
 }
